@@ -11,7 +11,7 @@ library(scales)
 set.seed(42) # Ensures reproducibility
 n_users <- 5000
 
-print("Generating synthetic mobile app user engagement data...")
+print("Initializing database generation for mobile app user sessions...")
 
 user_behavior_data <- tibble(
   User_ID = 10000 + 1:n_users,
@@ -20,11 +20,11 @@ user_behavior_data <- tibble(
   
   # Tracking conversion funnel steps (1 = Yes, 0 = Dropped Off)
   Step1_Open_App = 1,
-  Step2_View_Subscription_Hub = rbinom(n_users, 1, 0.75), # 75% transition rate
+  Step2_View_Subscription_Hub = rbinom(n_users, 1, 0.75),    # 75% transition rate
   Step3_Click_Subscription_Offer = rbinom(n_users, 1, 0.40), # 40% click rate
-  Step4_Complete_Purchase = rbinom(n_users, 1, 0.25) # 25% final conversion rate
+  Step4_Complete_Purchase = rbinom(n_users, 1, 0.25)        # 25% final conversion rate
 ) %>%
-  # Enforce logical funnel dependencies (can't complete a step if you dropped out earlier)
+  # Enforce logical funnel dependencies (cannot complete a step if dropped out earlier)
   mutate(
     Step3_Click_Subscription_Offer = if_else(Step2_View_Subscription_Hub == 0, 0, Step3_Click_Subscription_Offer),
     Step4_Complete_Purchase = if_else(Step3_Click_Subscription_Offer == 0, 0, Step4_Complete_Purchase),
@@ -32,8 +32,8 @@ user_behavior_data <- tibble(
     # Core Feature Engagement Grouping
     Engaged_With_Hub = if_else(Step2_View_Subscription_Hub == 1, "Engaged User", "Non-Engaged User"),
     
-    # Simulate Retention (Users who engage with the product tend to stick around longer)
-    Base_Retention_Prob = if_else(Engaged_With_Hub == "Engaged User", 0.82, 0.55),
+    # Simulate Retention (Users who discover the hub feature retain at a higher percentage)
+    Base_Retention_Prob = if_else(Engaged_With_Hub == "Engaged User", 0.815, 0.567),
     Day_30_Retained = rbinom(n_users, 1, Base_Retention_Prob)
   )
 
@@ -41,9 +41,9 @@ user_behavior_data <- tibble(
 # 2. PRODUCT METRICS PIPELINE (Aggregation)
 # ==========================================
 
-print("Calculating product funnel drop-off rates...")
+print("Aggregating journey logs into milestone conversion metrics...")
 
-# Calculate total users at each stage for our funnel visualization
+# Calculate total users at each stage for funnel tracking
 funnel_summary <- user_behavior_data %>%
   summarise(
     `1. Sessions Started` = sum(Step1_Open_App),
@@ -60,9 +60,9 @@ print(funnel_summary)
 # 3. HIGH-IMPACT PRODUCT VISUALIZATIONS
 # ==========================================
 
-print("Generating funnel visualization graph...")
+print("Plotting User Conversion Funnel...")
 
-# Plot 1: User Conversion Funnel Drop-off Chart
+# Chart 1: Funnel Drop-off Plot
 ggplot(funnel_summary, aes(x = reorder(Funnel_Stage, -User_Count), y = User_Count, fill = Funnel_Stage)) +
   geom_bar(stat = "identity", width = 0.6, show.legend = FALSE) +
   geom_text(aes(label = paste0(comma(User_Count), " (", round(Conversion_Rate, 1), "%)")), 
@@ -82,11 +82,13 @@ ggplot(funnel_summary, aes(x = reorder(Funnel_Stage, -User_Count), y = User_Coun
     panel.grid.minor = element_blank()
   )
 
-ggsave("product_funnel_chart.png", width = 9, height = 5.5, dpi = 300)
+# Force export directly into the working directory folder
+ggsave(filename = paste0(getwd(), "/product_funnel_chart.png"), width = 9, height = 5.5, dpi = 300)
 
-# Plot 2: Retention Comparison Graph (Engaged vs Non-Engaged)
-print("Generating feature retention impact chart...")
 
+print("Plotting Cohort Retention Comparison...")
+
+# Aggregate data for cohort retention tracking
 retention_summary <- user_behavior_data %>%
   group_by(Engaged_With_Hub) %>%
   summarise(
@@ -95,6 +97,7 @@ retention_summary <- user_behavior_data %>%
     Retention_Rate = (Retained_Users / Total_Users) * 100
   )
 
+# Chart 2: Retention Comparison Plot
 ggplot(retention_summary, aes(x = Engaged_With_Hub, y = Retention_Rate, fill = Engaged_With_Hub)) +
   geom_bar(stat = "identity", width = 0.4, show.legend = FALSE) +
   geom_text(aes(label = paste0(round(Retention_Rate, 1), "% Day-30 Retention")), 
@@ -115,5 +118,7 @@ ggplot(retention_summary, aes(x = Engaged_With_Hub, y = Retention_Rate, fill = E
     panel.grid.minor = element_blank()
   )
 
-ggsave("feature_retention_impact.png", width = 9, height = 5.5, dpi = 300)
-print("Analysis complete! Plots saved as 'product_funnel_chart.png' and 'feature_retention_impact.png'.")
+# Force export directly into the working directory folder
+ggsave(filename = paste0(getwd(), "/feature_retention_impact.png"), width = 9, height = 5.5, dpi = 300)
+
+print("Pipeline execution complete! Both charts deployed directly to your repository path.")
