@@ -5,6 +5,8 @@
 library(tidyverse)
 library(scales)
 
+setwd("C:/Users/Brighton/OneDrive/Documents/GitHub/Mobile-Feature-Engagement-Analysis")
+
 # ==========================================
 # 1. DATA SIMULATION (Building Event Logs)
 # ==========================================
