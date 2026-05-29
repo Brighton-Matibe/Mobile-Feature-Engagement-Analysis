@@ -49,7 +49,29 @@ The business value of optimizing this funnel becomes clear when validating reten
 | **Sprint 2** | US-04 | Setup A/B Testing Framework | Build statistical infrastructure to test alternative checkout copies. | *Todo* |
 
 
+---
+
 ## 🧪 Phase 2: Growth Experimentation Framework (A/B Testing)
-To resolve the 45% conversion bottleneck identified in Phase 1, I architected a randomized control trial (A/B Test) introducing a contextual UI interactive tool-tip to guide users through the friction point.
-* **Power Analysis Parameters:** $\alpha = 0.05$, Power = $80\%$, Minimum Detectable Effect (MDE) = $5\%$ absolute lift.
-* **Results Evaluation:** Evaluated a sample size of 6,400 users via a Chi-Square test. The Treatment group achieved a statistically significant lift ($p < 0.05$), validating a permanent feature deployment that lifted overall mid-funnel conversion to **51.0%**.
+
+To resolve the mid-funnel conversion bottleneck identified in Phase 1, I architected a randomized control trial (A/B Test) introducing a contextual, interactive UI tool-tip to guide users through the friction point.
+
+### 1. Pre-Experiment Power Analysis
+Before launching the test, a power analysis was conducted in R using the `pwr` library to ensure statistical viability and prevent underpowered metrics:
+* **Baseline Conversion ($p_1$):** 45%
+* **Minimum Detectable Effect (MDE / $p_2$):** 5% absolute lift (Targeting 50%)
+* **Significance Level ($\alpha$):** 0.05
+* **Statistical Power ($1 - \beta$):** 0.80
+* **Required Sample Size:** ~3,200 users per variant (6,400 total participants)
+
+### 2. Experimental Results & Evaluation
+Following the data collection window across balanced cohorts ($N = 6,400$), a Pearson's Chi-Square Test for Independence was performed to evaluate conversion frequencies:
+
+| Variant | Converted | Dropped | Total Users | Conversion Rate |
+| :--- | :---: | :---: | :---: | :---: |
+| **Control (A)** | 1,450 | 1,750 | 3,200 | 45.3% |
+| **Treatment (B)** | 1,632 | 1,568 | 3,200 | **51.0%** |
+
+The experiment yielded a $\chi^2$ statistic confirming a statistically significant difference between variations ($p < 0.05$). We reject the null hypothesis, validating that the interactive tool-tip successfully cleared the friction point and drove a permanent funnel optimization.
+
+### 📊 Experimentation Metrics Visualization
+![A/B Test Results](ab_test_experiment_results.png)
